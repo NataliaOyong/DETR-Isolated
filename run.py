@@ -39,7 +39,7 @@ def check_dependencies():
 
 def check_model_weights():
     """Check if model weights file exists"""
-    weights_file = "detr_isolated_model_100_weights.pth"
+    weights_file = "detr_isolated100_weights.pth"
     if not os.path.exists(weights_file):
         print(f"⚠️  Warning: File {weights_file} tidak ditemukan!")
         print("   Pastikan file weights berada di direktori yang sama dengan aplikasi.")
