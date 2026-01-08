@@ -1,3 +1,6 @@
+"""
+Utility functions untuk model operations
+"""
 import torch
 import torchvision.transforms as T
 from PIL import Image
@@ -18,6 +21,7 @@ except ImportError:
     TRANSFORMERS_AVAILABLE = False
     print("Warning: transformers library not available. Please install: pip install transformers")
 
+
 def load_model(weights_path, device='cpu', checkpoint='facebook/detr-resnet-50'):
     """
     Load DETR model with pretrained weights.
@@ -34,7 +38,7 @@ def load_model(weights_path, device='cpu', checkpoint='facebook/detr-resnet-50')
     # Load checkpoint data to CPU first, allowing for pickled objects (the config dict)
     checkpoint_data = torch.load(weights_path, map_location='cpu')
     
-    num_classes = 2 # Default for old model format
+    num_classes = 2  # Default for old model format
     state_dict = None
 
     # Handle new and old formats
@@ -69,6 +73,7 @@ def load_model(weights_path, device='cpu', checkpoint='facebook/detr-resnet-50')
     print("Model weights loaded successfully!")
     
     return model, image_processor
+
 
 def predict_isolated_expressions(model, image_processor, image, confidence_threshold=0.5, device='cpu'):
     """
