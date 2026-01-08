@@ -4,6 +4,11 @@ from PIL import Image, ImageDraw
 import io
 import time
 import os
+import json
+import zipfile
+
+# --- Constants ---
+DEFAULT_CONFIDENCE_THRESHOLD = 0.5
 from model_utils import load_model, predict_isolated_expressions
 from training_ui import render_training_page
 
@@ -27,6 +32,10 @@ if not PDF_SUPPORT:
         "Untuk mengaktifkan, jalankan: `pip install PyMuPDF`",
         icon="⚠️"
     )
+
+# --- Fixed Confidence Threshold (tidak ditampilkan di UI) ---
+if 'confidence_threshold' not in st.session_state:
+    st.session_state.confidence_threshold = DEFAULT_CONFIDENCE_THRESHOLD
 
 # --- Custom CSS ---
 st.markdown("""
@@ -98,6 +107,8 @@ def render_detection_page():
         
         image_to_process = None
         if uploaded_file:
+            # Simpan nama file untuk digunakan di ekspor hasil
+            st.session_state.uploaded_filename = uploaded_file.name
             file_extension = os.path.splitext(uploaded_file.name)[1].lower()
 
             if file_extension == ".pdf":
@@ -194,12 +205,61 @@ def render_detection_page():
                 img_bytes.seek(0)
                 
                 # Use original filename without extension for the download
-                original_filename = os.path.splitext(uploaded_file.name)[0]
+                original_filename = os.path.splitext(
+                    st.session_state.get('uploaded_filename', 'dokumen')
+                )[0]
                 st.download_button(
                     label="⬇️ Unduh Gambar Hasil Deteksi",
                     data=img_bytes,
                     file_name=f"hasil_deteksi_{original_filename}.jpg",
                     mime="image/jpeg"
+                )
+
+                # Tampilkan crop per formula + tombol unduh
+                st.subheader("📑 Crop Per Formula")
+                for idx, detection in enumerate(detections):
+                    with st.expander(f"Formula #{idx + 1} (Confidence: {detection['confidence']:.2%})", expanded=True):
+                        cropped_img = detection['cropped_image']
+                        st.image(cropped_img, caption=f"Formula #{idx + 1}", use_container_width=True)
+
+                        img_bytes = io.BytesIO()
+                        cropped_img.save(img_bytes, format='JPEG')
+                        img_bytes.seek(0)
+
+                        st.download_button(
+                            label=f"Unduh Formula #{idx + 1}",
+                            data=img_bytes,
+                            file_name=f"formula_{idx + 1}.jpg",
+                            mime="image/jpeg",
+                            key=f"download_formula_{idx}"
+                        )
+
+                # Unduh semua crop + metadata dalam satu ZIP
+                zip_buffer = io.BytesIO()
+                with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                    metadata = []
+                    for idx, detection in enumerate(detections):
+                        img_bytes = io.BytesIO()
+                        detection['cropped_image'].save(img_bytes, format='JPEG')
+                        img_bytes.seek(0)
+                        zip_file.writestr(f"formula_{idx + 1}.jpg", img_bytes.read())
+
+                        metadata.append({
+                            "index": idx + 1,
+                            "bbox": detection['bbox'],
+                            "confidence": detection['confidence'],
+                            "label": detection['label']
+                        })
+
+                    zip_file.writestr("metadata.json", json.dumps(metadata, indent=2))
+
+                zip_buffer.seek(0)
+                st.download_button(
+                    label="⬇️ Unduh Semua (ZIP + metadata.json)",
+                    data=zip_buffer,
+                    file_name=f"semua_formula_{original_filename}.zip",
+                    mime="application/zip",
+                    key="download_all_zip"
                 )
         else:
             st.info("👆 Upload gambar dan klik tombol 'Jalankan Deteksi' untuk melihat hasilnya di sini.")
@@ -218,16 +278,6 @@ with st.sidebar:
     - **Deteksi Ekspresi:** Upload gambar (JPG, PNG) atau PDF untuk dideteksi.
     - **Training Model:** Lakukan fine-tuning pada model DETR menggunakan dataset Anda.
     """)
-    
-    if app_mode == "Deteksi Ekspresi":
-        st.session_state.confidence_threshold = st.slider(
-            "Confidence Threshold", 
-            min_value=0.1, 
-            max_value=0.9, 
-            value=0.5, 
-            step=0.05,
-            help="Hanya deteksi dengan skor di atas ambang batas ini yang akan ditampilkan."
-        )
 
 # --- Model Loading ---
 if 'model' not in st.session_state:

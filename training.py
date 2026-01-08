@@ -103,7 +103,7 @@ class Detr(pl.LightningModule):
             {"params": [p for n, p in self.named_parameters() if "backbone" in n and p.requires_grad], "lr": self.hparams.lr_backbone},
         ]
         optimizer = torch.optim.AdamW(param_dicts, lr=self.hparams.lr, weight_decay=self.hparams.weight_decay)
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5, verbose=True)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5)
         return {"optimizer": optimizer, "lr_scheduler": {"scheduler": scheduler, "monitor": "val/loss"}}
 
 # --- Loss Plotting Callback ---
