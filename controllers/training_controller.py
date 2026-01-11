@@ -3,6 +3,7 @@ Controller untuk training operations
 """
 import os
 import torch
+from datetime import datetime
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.loggers import CSVLogger, TensorBoardLogger
@@ -178,8 +179,16 @@ class TrainingController:
         # Start training
         trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=val_loader)
         
+        # Generate filename dengan format: detr_isolated[epoch]_weight_[tanggal]
+        final_epoch = trainer.current_epoch + 1  # current_epoch is 0-indexed
+        current_date = datetime.now()
+        day = current_date.day
+        month_abbr = current_date.strftime("%b")
+        date_str = f"{day}{month_abbr}"
+        
+        final_model_path = f"detr_isolated{final_epoch}_weight_{date_str}.pth"
+        
         # Save model
-        final_model_path = "detr_isolated_trained_weights.pth"
         model_data = {
             'state_dict': model.state_dict(),
             'num_classes': len(id2label),
