@@ -23,10 +23,28 @@ Aplikasi web untuk mendeteksi ekspresi matematika terisolasi dalam dokumen digit
 - 📈 Visualisasi loss training
 - 💾 Download model weights hasil training
 
-## 📋 Requirements
+## 📋 Requirements & Libraries
 
 - Python 3.8 atau lebih tinggi
 - Dependencies (lihat `requirements.txt`)
+
+### Penjelasan Library Utama
+
+Berikut adalah library utama yang digunakan dalam project ini beserta fungsinya:
+
+| Library | Kegunaan |
+| :--- | :--- |
+| **Streamlit** | Framework utama untuk membuat antarmuka web (UI) yang interaktif tanpa perlu coding HTML/CSS. |
+| **PyTorch (`torch`)** | Library Deep Learning untuk komputasi tensor dan pelatihan model neural network. |
+| **Torchvision** | Menyediakan dataset, arsitektur model, dan transformasi gambar untuk computer vision. |
+| **Transformers** | Menyediakan model pre-trained DETR (Detection Transformer) dari Hugging Face. |
+| **PyTorch Lightning** | Wrapper untuk PyTorch yang merapikan struktur kode training dan validasi. |
+| **Roboflow** | Mengelola dan mendownload dataset gambar yang sudah dianotasi. |
+| **Pillow (PIL)** | Library standar untuk membuka, memanipulasi, dan menyimpan file gambar. |
+| **Matplotlib** | Membuat visualisasi grafik, seperti kurva loss training. |
+| **Supervision** | Membantu visualisasi hasil deteksi (bounding box) agar terlihat lebih rapi dan estetis. |
+| **PyMuPDF** | Menangani pemrosesan file PDF, memungkinkan ekstraksi gambar dari dokumen. |
+| **OpenCV** (`headless`) | Library computer vision untuk manipulasi gambar tingkat lanjut. |
 
 ## 🚀 Instalasi
 
@@ -261,21 +279,9 @@ final_path, plot_path = training_ctrl.train()
 - Logs training tersimpan di `lightning_logs/`
 - Plot loss training tersimpan di `training_plots/`
 
-## 📄 License
-
-Silakan sesuaikan dengan license project Anda.
-
-## 👥 Contributors
-
-Silakan sesuaikan dengan contributors project Anda.
-
 ## 🙏 Acknowledgments
 
 - Hugging Face Transformers untuk model DETR
 - PyTorch Lightning untuk training framework
 - Streamlit untuk UI framework
 - Roboflow untuk dataset management
-
----
-
-**Last Updated**: Struktur MVC dengan learning rate fixed dan support untuk JPG, PNG, PDF.
